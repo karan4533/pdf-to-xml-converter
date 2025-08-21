@@ -1,32 +1,59 @@
+
 # PDF to XML Converter
 
-## Project Analysis
+A simple tool to convert PDF files to XML format using FastAPI (backend) and Streamlit (frontend).
 
-This project is designed to convert PDF documents into XML format. The main objectives and workflow include:
+## Features
+- Upload PDF files
+- Extract text and data from PDFs
+- Convert extracted data to XML
+- Download and preview XML output
 
-- **Input**: Accepts PDF files as input.
-- **Processing**: Extracts text and relevant data from the PDF using parsing libraries.
-- **Output**: Structures the extracted data into XML format for further use or integration.
+## Technologies Used
+- **Backend:** FastAPI (Python)
+- **Frontend:** Streamlit (Python)
+- **PDF Processing:** PyMuPDF, pdfplumber, camelot, pandas, Pillow, pytesseract
 
-### Key Features
+## Requirements
+- Python 3.8+
+- Required Python packages (see `requirements.txt`)
+- Tesseract OCR (for image extraction, optional)
 
-- Automated PDF parsing
-- Data extraction and transformation
-- XML generation for interoperability
+## Installation
+1. Clone the repository:
+	```
+	git clone https://github.com/karan4533/pdf-to-xml-converter.git
+	```
+2. Install Python dependencies:
+	```
+	pip install -r backend/requirements.txt
+	pip install streamlit requests
+	```
+3. (Optional) Install Tesseract OCR for image extraction:
+	- Download from https://github.com/tesseract-ocr/tesseract/wiki
+	- Add Tesseract to your system PATH
 
-### Potential Use Cases
+## Usage
+### Start Backend (FastAPI)
+```
+cd backend
+uvicorn app.main:app --reload
+```
 
-- Data migration from PDF reports to XML databases
-- Integration with systems requiring XML input
-- Document archiving and digitalization
+### Start Frontend (Streamlit)
+```
+cd frontend
+streamlit run app.py
+```
 
-### Technologies
+### Workflow
+1. Upload a PDF file in the Streamlit app
+2. The backend processes the PDF and generates XML
+3. Download or preview the XML output
 
-- Likely uses Python or similar language for PDF parsing (e.g., PyPDF2, pdfminer)
-- XML libraries for output formatting
+## Notes
+- If Tesseract is not installed, image extraction will be skipped.
+- For local use, ensure both backend and frontend are running.
 
-### Benefits
-
-- Streamlines conversion process
-- Reduces manual data entry
-- Enhances data accessibility and usability
+## License
+MIT
