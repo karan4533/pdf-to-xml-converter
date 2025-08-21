@@ -201,4 +201,4 @@ class PDFProcessor:
                         print(f"Image extraction error: {e}")
                         continue
         
-        return images_data
+        return images_data         
