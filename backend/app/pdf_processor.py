@@ -1,16 +1,35 @@
 import fitz  # PyMuPDF
 import pdfplumber
-import camelot
+try:
+    import camelot
+    CAMELOT_AVAILABLE = True
+except ImportError:
+    CAMELOT_AVAILABLE = False
+    print("Warning: Camelot not available. Table extraction will use pdfplumber only.")
+
 import pandas as pd
 from PIL import Image
-import pytesseract
 import io
 import base64
 from typing import Dict, List, Any
+import subprocess
+import os
 
 class PDFProcessor:
     def __init__(self):
         self.supported_formats = ['.pdf']
+        # Check if tesseract is available
+        self.tesseract_available = self._check_tesseract()
+    
+    def _check_tesseract(self) -> bool:
+        """Check if tesseract is available"""
+        try:
+            subprocess.run(['tesseract', '--version'], 
+                         capture_output=True, check=True)
+            return True
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            print("Warning: Tesseract OCR not found. Image text extraction will be skipped.")
+            return False
     
     def process_pdf(self, pdf_path: str) -> Dict[str, Any]:
         """Main processing function that extracts all data from PDF"""
@@ -33,7 +52,7 @@ class PDFProcessor:
             # Extract tables
             extracted_data['tables'] = self._extract_tables(pdf_path)
             
-            # Extract images and OCR
+            # Extract images (with or without OCR)
             extracted_data['images'] = self._extract_images(pdf_path)
             
             # Get page count
@@ -77,52 +96,59 @@ class PDFProcessor:
         return text_content
     
     def _extract_tables(self, pdf_path: str) -> List[Dict[str, Any]]:
-        """Extract tables using Camelot"""
+        """Extract tables using Camelot or pdfplumber"""
         tables_data = []
         
-        try:
-            # Try to extract tables with Camelot
-            tables = camelot.read_pdf(pdf_path, pages='all')
-            
-            for i, table in enumerate(tables):
-                table_dict = {
-                    'table_id': i + 1,
-                    'page': table.page,
-                    'accuracy': table.accuracy,
-                    'data': table.df.to_dict('records'),
-                    'headers': table.df.columns.tolist(),
-                    'rows': len(table.df),
-                    'columns': len(table.df.columns)
-                }
-                tables_data.append(table_dict)
-        
-        except Exception as e:
-            print(f"Table extraction error: {e}")
-            # Fallback to pdfplumber for table extraction
+        # Try Camelot first if available
+        if CAMELOT_AVAILABLE:
             try:
-                with pdfplumber.open(pdf_path) as pdf:
-                    for page_num, page in enumerate(pdf.pages, 1):
-                        tables = page.extract_tables()
-                        for i, table in enumerate(tables):
-                            if table:
-                                df = pd.DataFrame(table[1:], columns=table[0])
+                tables = camelot.read_pdf(pdf_path, pages='all')
+                
+                for i, table in enumerate(tables):
+                    table_dict = {
+                        'table_id': i + 1,
+                        'page': table.page,
+                        'accuracy': table.accuracy,
+                        'data': table.df.to_dict('records'),
+                        'headers': table.df.columns.tolist(),
+                        'rows': len(table.df),
+                        'columns': len(table.df.columns)
+                    }
+                    tables_data.append(table_dict)
+                return tables_data
+            except Exception as e:
+                print(f"Camelot table extraction error: {e}")
+        
+        # Fallback to pdfplumber for table extraction
+        try:
+            with pdfplumber.open(pdf_path) as pdf:
+                for page_num, page in enumerate(pdf.pages, 1):
+                    tables = page.extract_tables()
+                    for i, table in enumerate(tables):
+                        if table and len(table) > 0:
+                            # Handle empty tables
+                            headers = table[0] if table[0] else [f"Column_{j}" for j in range(len(table[0]) if table[0] else 1)]
+                            data = table[1:] if len(table) > 1 else []
+                            
+                            if data:
+                                df = pd.DataFrame(data, columns=headers)
                                 table_dict = {
                                     'table_id': len(tables_data) + 1,
                                     'page': page_num,
                                     'accuracy': 0.8,  # Default accuracy
                                     'data': df.to_dict('records'),
-                                    'headers': df.columns.tolist(),
+                                    'headers': headers,
                                     'rows': len(df),
-                                    'columns': len(df.columns)
+                                    'columns': len(headers)
                                 }
                                 tables_data.append(table_dict)
-            except Exception as e2:
-                print(f"Fallback table extraction error: {e2}")
+        except Exception as e:
+            print(f"pdfplumber table extraction error: {e}")
         
         return tables_data
     
     def _extract_images(self, pdf_path: str) -> List[Dict[str, Any]]:
-        """Extract images and perform OCR"""
+        """Extract images (with OCR if tesseract is available)"""
         images_data = []
         
         with fitz.open(pdf_path) as doc:
@@ -141,8 +167,17 @@ class PDFProcessor:
                             img_data = pix.tobytes("png")
                             pil_image = Image.open(io.BytesIO(img_data))
                             
-                            # Perform OCR
-                            ocr_text = pytesseract.image_to_string(pil_image)
+                            # Try OCR if tesseract is available
+                            ocr_text = ""
+                            if self.tesseract_available:
+                                try:
+                                    import pytesseract
+                                    ocr_text = pytesseract.image_to_string(pil_image)
+                                except Exception as ocr_error:
+                                    print(f"OCR failed for image {img_index + 1} on page {page_num + 1}: {ocr_error}")
+                                    ocr_text = "OCR extraction failed"
+                            else:
+                                ocr_text = "OCR not available (Tesseract not installed)"
                             
                             # Convert image to base64 for embedding
                             buffered = io.BytesIO()
