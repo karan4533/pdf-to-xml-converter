@@ -1,0 +1,109 @@
+.App {
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  padding: 40px;
+  max-width: 800px;
+  width: 90%;
+  margin: 20px;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 2.5em;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.upload-section {
+  margin-bottom: 30px;
+}
+
+.file-input {
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.file-info {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.upload-btn, .download-btn, .preview-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 25px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 10px;
+  transition: transform 0.2s;
+}
+
+.upload-btn:hover, .download-btn:hover, .preview-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.upload-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.error {
+  background: #fee;
+  color: #c33;
+  padding: 15px;
+  border-radius: 10px;
+  margin: 20px 0;
+  border: 1px solid #fcc;
+}
+
+.result-section {
+  background: #efe;
+  padding: 20px;
+  border-radius: 10px;
+  margin: 20px 0;
+  border: 1px solid #cfc;
+}
+
+.preview-section {
+  margin-top: 30px;
+  text-align: left;
+}
+
+.xml-preview {
+  background: #f4f4f4;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  max-height: 400px;
+  overflow-y: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.action-buttons {
+  margin-top: 15px;
+}
