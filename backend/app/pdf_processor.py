@@ -126,9 +126,13 @@ class PDFProcessor:
                     tables = page.extract_tables()
                     for i, table in enumerate(tables):
                         if table and len(table) > 0:
-                            # Handle empty tables
-                            headers = table[0] if table[0] else [f"Column_{j}" for j in range(len(table[0]) if table[0] else 1)]
-                            data = table[1:] if len(table) > 1 else []
+                            # Handle empty tables and extract headers properly
+                            if table and len(table) > 0 and table[0]:
+                                headers = table[0]
+                                data = table[1:] if len(table) > 1 else []
+                            else:
+                                # If no headers or empty table, skip this table
+                                continue
                             
                             if data:
                                 df = pd.DataFrame(data, columns=headers)
