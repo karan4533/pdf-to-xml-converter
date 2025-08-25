@@ -4,6 +4,7 @@ import camelot
 import pandas as pd
 from PIL import Image
 import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r"C:\Users\karanm\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
 import io
 import base64
 from typing import Dict, List, Any
